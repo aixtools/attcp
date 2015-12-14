@@ -1,0 +1,170 @@
+'\"macro stdmacro
+.TH ATTCP 1 local
+.SH NAME
+attcp \- Another Test TCP and UDP performance
+.SH SYNOPSIS
+.B attcp \-t
+.RB [ \-u ]
+.RB [ \-p\0 \fIport\fP ]
+.RB [ \-l\0 \fIbuffersize\fP ]
+.RB [ \-s\0 \fIsocketsize\fP ]
+.RB [ \-n\0 \fInumIOs\fP ]
+.RB [ \-f\0 \fIformat\fP ]
+.RB [ \-i\0 \fIseconds\fP ]
+.RB [ \-c ]
+.RB [ \-d ]
+.RB [ \-D ]
+.RB [ \-q]
+.RB [ \-v]
+.RB host
+.RB [ < in ]
+.br
+.B attcp \-r
+.RB [ \-u ]
+.RB [ \-p\0 \fIport\fP ]
+.RB [ \-l\0 \fIbuffersize\fP ]
+.RB [ \-s\0 \fIsocketsize\fP ]
+.RB [ \-f\0 \fIformat\fP ]
+.RB [ \-i\0 \fIseconds\fP ]
+.RB [ \-T ]
+.RB [ \-c ]
+.RB [ \-q]
+.RB [ \-v ]
+.RB [ > out ]
+.SH DESCRIPTION
+.I Attcp
+times the transmission and reception of data between two systems using 
+the UDP or TCP protocols.
+Attcp differs from the original 
+.I ttcp
+by the addition and deletion of several features. 
+.PP
+Traditionally testing testing has been performed by starting a receiver
+\f3\-r\f1  and then starting the the transmitter \f3\-t\f1.
+These tests would use a default port (ttcp, written in early 1980's used port
+5500).
+.PP
+.I Attcp has an script installed in \f3/opt/sbin/attcp_inetd.ksh\f1 that
+installs three attcp service names in \f3/etc/services\f1 and also adds
+entries in \f3/etc/inetd.conf\f1a so that the "other" side can be started
+by inetd support, rather than requiring a seperate session to always start
+the receiver first. 
+.B Note:
+The port numbers used are above
+.B IPPORT_USERRESERVED
+and below
+.B TCP_EPHEMERAL_LOW_DFLT
+and
+.B UDP_EPHEMERAL_LOW_DFLT.
+The change was made because port 5500 is now reserved for
+.br
+fcp-addr-srvr1  5500/tcp                # fcp-addr-srvr1
+.br
+fcp-addr-srvr1  5500/udp                # fcp-addr-srvr1
+.PP
+.I The current definition is 55000, 55001 and 55002 - but I expect to change these as they are
+.B above
+TCP_EPHEMERAL_LOW_DFLT and UDP_EPHEMERAL_LOW_DFLT
+.SH USAGE
+.PP
+Tests lasting at least tens of seconds should be used to obtain accurate
+measurements.
+.PP
+The original
+.I ttcp
+and later
+.I nttcp
+could also be used as a ``network pipe'' for moving directory hierarchies
+This function has been removed for security reasons, i.e. to help
+avoid unauthenticated transfers. Instead
+.I attcp
+communicates with one of two services that can be installed on remote
+systems to read or send data streams to/from ports 55001 and 55002.
+.SH OPTIONS
+.TP 10
+\-x
+Transmit mode.
+Source a data pattern to network;
+.TP 10
+\-r
+Receive mode.
+Sink (discard) the data.
+.TP 10
+\-u
+Use UDP instead of TCP.
+.TP 10
+\-l \fIlength\fP
+Length of buffers in bytes (default 8192).
+For UDP, this value is the number of data bytes in each packet.
+The system limits the maximum UDP packet length. This limit can be 
+changed with the \f3\-s\f1 option.
+.TP 10
+\-s \fIsize\fP
+Set size of socket buffer.  The default varies from system to system.
+This parameter affects the maximum UDP packet length.
+.TP 10
+\-n \fIcountIOs\fP
+Number of (source) buffers transmitted (default 20480).
+.TP 10
+\-p \fIport\fP
+Port number to send to or listen on (default 55000).
+.TP 10
+\-d
+If transmitting using TCP, do not buffer data when sending
+(sets the TCP_NODELAY socket option).
+.TP 10
+\-B
+When receiving data, perform reads only as "full blocks", 
+using the block size specified by \f3\-l\f1.
+This option is useful to measure effect of no_delay and/or largesend
+on the number of packets sent, aka fragementatioin of TCP streams and/or
+UDP packet size mismatches.
+.TP 10
+\-A \fIalign\fP
+OBSOLETED - No real transfers!
+Using the option will cause a syntax error.
+.TP 10
+\-O \fIoffset\fP
+OBSOLETED - No real transfers!
+Using the option will cause a syntax error.
+.TP 10
+\-f \fIformat\fP
+Specify, using one of the following characters, 
+the format of the throughput rates as 
+bits/sec ('b'), bytes/sec ('B'), 
+kilobits/sec ('k'), kilobytes/sec ('K'), 
+megabits/sec ('m'), megabytes/sec ('M'), 
+gigabits/sec ('g'), or gigabytes/sec ('G').
+raw bits/sec ('r'), or raw bytes/sec ('R').
+The default is 'M'. "raw" means that only the numeric
+value is printed, without a unit of measure.
+.TP 10
+\-c
+``Collect call'' aka Connect. Originally this was used in conjunction
+with the and \f3\-r\f1 options. Initiate the connection, then read data from the remote host. Basically, now it means
+.I attcp
+connects to the inetd daemon at the target and reads from the program
+.I ttcpsend.
+
+.TP 10
+\-i \fIseconds\fP
+Test for the specified number of seconds.
+Used in conjunction with the \f3\-r\f1 options.
+Rather than reading or writing a specified number of buffers (default),
+read or write for a specified number of seconds. 
+Useful when the network speed is not known in advance,
+or may vary significantly.
+.TP 10
+\-T
+``Touch'' the data as they are read in order to measure cache effects.
+.TP 10
+\-q
+Quiet: print only the measured network speed.
+.TP 10
+\-v
+Verbose: print more statistics.
+.TP 10
+\-D
+Debug: set the SO_DEBUG socket option.
+.SH SEE ALSO
+ping(8), traceroute(8), ttcpread(1), ttcpsend(1), speedfrom(1), speedto(1)

@@ -1,0 +1,22 @@
+# generated files
+*~
+*.o
+*.so
+
+*.po
+
+#buildaix files and directories
+.buildaix/
+buildaix/
+installp/
+
+#autotools
+Makefile.in
+README
+README.md
+TODO
+aclocal.m4
+autom4te.cache/
+build-aux/
+config.h.in
+configure

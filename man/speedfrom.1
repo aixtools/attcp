@@ -1,0 +1,18 @@
+'\"macro stdmacro
+.TH SPEEDFROM 1 local
+.SH NAME
+speedfrom \- Measure and report the TCP network capacity transmitting between here and a specified node
+.SH SYNOPSIS
+.B speedfrom 
+.I host
+.SH DESCRIPTION
+.I Speedfrom
+is a convenient shell script wrapper for attcp.
+Speedfrom passes the appropriate arguments to attcp
+to measure TCP transmit capacity to the local host from the specified host,
+over a ten second peroid.
+Speedfrom assumes that the remote host is running something like the 
+.I ttcp_send 
+program via inetd on port 55002.
+.SH SEE ALSO
+attcp(1), speedto(1), ttcp_read(1), ttcp_send(1)

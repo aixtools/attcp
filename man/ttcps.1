@@ -1,0 +1,17 @@
+'\"macro stdmacro
+.TH TTCPS 1 local
+.SH NAME
+ttcps \- write forever on stdout
+.SH SYNOPSIS
+.B ttcps
+.SH DESCRIPTION
+.I Ttcps
+writes meaningless ascii data to stdout.
+Ttcps was written to be used with xinetd in network throughput testing.
+A client connecting via TCP to the port designated with ttcps
+as its server will receive a constant stream of data,
+sent as fast as the network will allow,
+up to the capacity of the sending host to transmit data,
+and provided that other processes' use of machine resources do not interfere.	
+.SH SEE ALSO
+inetd(8), attcp(1), ttcpr(1)
