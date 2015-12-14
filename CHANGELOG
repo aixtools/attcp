@@ -1,0 +1,67 @@
+TODO:
+* enhance and enlarge syslog() usage
+* execute with one thread created out of main
+* create XX threads in parallel
+0.6.4.0: 2015-12-13
+* Rework structure to be suitable for autools
+
+0.6.3.0: No changes expected, kept for history
+
+0.6.2.0: 2014-06-03
+* fixed bug - %time was processor time used, now calculate the %
+* changed format of IBytes and Obytes to KBytes (I KB, O KB) of perfstat stats
+* testing with AIX 6.1, but packaging for AIX 5.3
+* start deleting all global variables - everything to be malloc() created, or on stack
+* reduced effect of AIX 5.3 perfstat bug by setting values to zero when delta
+  between start and finish are broken. Damage is the same, but output is easier to read.
+
+0.6.1.0: 2014-05-26
+* finish the pthread logic, so it both a main (data reporter)
+** and 1 - initially - thread that does the IP traffic
+* remove debug statements (or syslog them as LOG_DEBUG) for the counter issue
+
+0.6.0.0: 2014-05-23
+* use pthread management
+* rename nearly all source files
+* rename ttcp_{read|send} to ttcp{read|send} to shorten name for monitors
+* want to think about how to get ttcpread and ttcpsend to be thread based rather than process based
+** basic logic is done to be thread based - structures for data rather than globals
+* added syslog reporting to local2 facility
+
+0.5.2.0: 2013-12-09
+* modify output format more
+* get to fit in 80 columns
+* report bulk MB/s per interface
+
+0.5.1.0: 2013-12-04
+* change format of output drastically
+** modfying the output of perfstat to show avg size of i/o packets
+* split code into smaller files
+* rename attcp_metrics attcp_perfstat
+* catch INT signal
+
+0.5.0.0: 2013-10-22
+* new brach started - should have been earlier when libperfstat was added - sniff
+
+v0.4.1.3: 2013-10-22
+* started adding changes again, sigh
+* fixed attcp_metrics example so that program could be compiled on AIX 5.3
+* modified and expanded classic rusuage based statistics
+
+v0.1.2:
+* corrected /etc/services entries in ttcp_servises.ksh
+* install ttcp_services.ksh in /opt/sbin
+
+v0.1.1:
+
+* changed port printf formating from %d to $%
+
+v0.1.0: June 2012
+ * Modified June 2012 by Michael Felt <mamfelt@gmail.com>
+ *      moved default port to 50001, beyond IPPORT_USERRESERVED
+ *      made RCSid a permanent comment
+ *      added SVN ID
+ *      removed BSD43 define
+ *      added argument to sigpipe for syntax warning
+ *      changed types to socklen_t from int for syntax warnings (on AIX)
+

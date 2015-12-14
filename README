@@ -1,0 +1,50 @@
+AIX TTCP
+
+This program is based on the TTCP.C program developed in the early 80's.
+I also borrowed some ideas from one modification called ETTCP.
+
+The programs were very old, and worked - but the usage reporting
+values were based on times() structures and data and in todays
+virtualized world I felt it was time for some usage of the performance
+API's provided by AIX.
+
+Similiar to another tool developed by a team from HP I hope to provide
+an neutral interface (e.g., times() based) that can be linked to on
+other systems.
+
+An idea from ETTCP was to have two program that would blow/suck
+data over the network. I am now calling the services ttcp_send/ttcp_read
+so that there origin and purpose is more clear on a scan of the
+/etc/services and /etc/inetd.conf file.
+
+Note: the TTCP_read and ATTCP_send will read and send from/to anything.
+It is up to the calling program to terminate the connection.
+However, both are configured to terminate automatically after 30 seconds
+if the calling program has not finished before that time.
+
+The program TTCP could also be used as a very simple FTP program.
+For security reasons the write to file descriptors 0 and 1 is removed.
+
+For the time being data packets writing only NULL bytes are being sent.
+I will look for look for some efficient ways to modify the data being sent
+anticipating the day when switches or other network components are doing
+compress/decompress on the fly.
+
+=== Based on 
+/*
+ *     N T T C P . C
+ *
+ * Test TCP connection.  Makes a connection on port 55000
+ * and transfers fabricated buffers or data copied from stdin.
+ *
+ * Distribution Status -
+ *      Public Domain.  Distribution Unlimited.
+ *
+ * Modified June 2012 by Michael Felt <mamfelt@gmail.com>
+ *     moved default port to 5001, beyond IPPORT_USERRESERVED
+ *     made RCSid a permanent comment
+ *     added SVN ID 
+ *     removed BSD43 define
+ *     added argument to sigpipe for syntax warning
+ *     changed types to socklen_t from int for syntax warnings (on AIX)
+ */
