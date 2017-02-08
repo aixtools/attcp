@@ -95,7 +95,7 @@ int perfstat_init(void)
 {
    static done=0;
    if (done++)
-	return;
+	return(1);
     /* check how many perfstat_netinterface_t structures are available */
    tot = perfstat_netinterface(NULL, NULL, sizeof(perfstat_netinterface_t), 0);
 

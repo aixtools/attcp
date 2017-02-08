@@ -200,7 +200,7 @@ prusage(r0, r1, e, b, outp)
 	*outp = '\0';
 }
 
-attcp_rpt(unsigned verbose, char fmt, uint64_t nbytes)
+void attcp_rpt(boolean verbose, char fmt, uint64_t nbytes)
 {
 	double cput, realt;		/* user, real time (seconds) */
 	double time_busy(), time_real();

@@ -13,6 +13,14 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 # Checks for programs.
 AC_PROG_CC
+## added by AIXTOOLS.net, but it never gets here - as
+## AC_PROG_C has already failed (exit 77)
+## as_fn_error 77 "C compiler cannot create executables
+##
+## ** If AIX, if gcc, if OBJECT_MODE=64
+## then CC="${CC} -maix64"
+## else CC="${CC} -maix32"
+## fi fi fi
 AC_PROG_INSTALL
 
 # Checks for libraries.
@@ -26,7 +34,7 @@ AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h stdlib.h string.h strings.h s
 AC_TYPE_SIZE_T
 
 # Checks for library functions.
-AC_FUNC_MALLOC
+# AC_FUNC_MALLOC - giving problems on AIX with xlc
 AC_CHECK_FUNCS([alarm bzero gethostbyname gettimeofday inet_ntoa select socket])
 
 AC_CONFIG_FILES([Makefile
