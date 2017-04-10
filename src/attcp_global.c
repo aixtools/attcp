@@ -1,15 +1,14 @@
 /*
  *	A T T C P  -- M A I N
  *
- * Test TCP connection.  Makes a connection on port 55000,55001,55002
+ * Test TCP connection.  Makes a connection on port 32765, 32766, 32767
  * and transfers fabricated buffers or data copied from stdin.
- *
+ * Copyright 2013-2016: Michael Felt and AIXTOOLS.NET
 
- * $Date:$
- * $Revision:$
- * $Author:$
- * $Id:$
- *
+ * $Date: 2016-01-17 19:09:44 +0000 (Sun, 17 Jan 2016) $
+ * $Revision: 179 $
+ * $Author: michael $
+ * $Id: attcp_global.c 179 2016-01-17 19:09:44Z michael $
  */
 
 #include <config.h>
@@ -33,7 +32,7 @@ int bufalign = 16*1024;		/* modulo this */
 int udp = 0;			/* 0 = tcp, !0 = udp */
 int options = 0;		/* socket options */
 int one = 1;                    /* for 4.3 BSD style setsockopt() */
-unsigned short port = 55000;		/* TCP port number */
+unsigned short port = PORT;	/* TCP port number */
 char *host;			/* ptr to name of host */
 int trans;			/* 0=receive, !0=transmit mode */
 int sinkmode = 0;		/* 0=normal I/O, !0=sink/source mode */

@@ -1,4 +1,16 @@
 /*
+ *      A T T C P
+ *
+ * Test TCP connection.  Makes a connection on port 32765, 32766, 32767
+ * and transfers fabricated buffers or data copied from stdin.
+ * Copyright 2013-2016: Michael Felt and AIXTOOLS.NET
+ *
+
+ * $Date: 2016-01-17 19:09:44 +0000 (Sun, 17 Jan 2016) $
+ * $Revision: 179 $
+ * $Author: michael $
+ * $Id: attcp_perfstat.c 179 2016-01-17 19:09:44Z michael $
+ *
  * modified to work with attcp and report end statistics
  */
 /* IBM_PROLOG_BEGIN_TAG                                                   */
@@ -17,8 +29,9 @@
 /* disclosure restricted by GSA ADP Schedule Contract with IBM Corp.      */
 /*                                                                        */
 /* IBM_PROLOG_END_TAG                                                     */
+/*
 static char sccsid[] = "@(#)65        1.3.1.2  src/bos/usr/ccs/lib/libperfstat/simpleifstat.c, libperfstat, bos61N, 1031A_61N 7/21/10 04:54:00";
-
+ */
 /* The sample program display the metrics *
  * related to each and every Individual   * 
  * network interface in the LPAR          */
@@ -95,7 +108,7 @@ int perfstat_init(void)
 {
    static done=0;
    if (done++)
-	return(1);
+	return(0);
     /* check how many perfstat_netinterface_t structures are available */
    tot = perfstat_netinterface(NULL, NULL, sizeof(perfstat_netinterface_t), 0);
 

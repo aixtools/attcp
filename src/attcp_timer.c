@@ -1,12 +1,16 @@
 /*
  *	A T T C P _ T I M E R . C
- *
- * Test TCP connection.  Makes a connection on port 55000
- * and transfers fabricated buffers or data copied from stdin.
- *
  *	T I M E R - time related functions
+ *
+ * Test TCP connection.  Makes a connection on port 32765, 32766, 32767
+ * and transfers fabricated buffers or data copied from stdin.
+ * Copyright 2013-2016: Michael Felt and AIXTOOLS.NET
+ *
+ * $Date: 2016-01-17 19:09:44 +0000 (Sun, 17 Jan 2016) $
+ * $Revision: 179 $
+ * $Author: michael $
+ * $Id: attcp_timer.c 179 2016-01-17 19:09:44Z michael $
  */
-
 #include <config.h>
 #include "attcp.h"
 

@@ -1,3 +1,4 @@
 #!/bin/ksh
 echo $0: performing a 10 second write
-/opt/bin/attcp -p 49150 -f M -x -i 10 -h $*
+# /opt/bin/attcp -p 49150 -f M -x -i 10 -h $*
+/opt/bin/attcp -p 32765 -f M -x -i 10 -h $*

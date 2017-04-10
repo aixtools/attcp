@@ -1,10 +1,15 @@
 /*
- *	A T T C P . C
- *
- * Test TCP connection.  Makes a connection on port 55000
- * and transfers fabricated buffers or data copied from stdin.
- *
+ *      A T T C P
  *	R E P O R T - report results
+ *
+ * Test TCP connection.  Makes a connection on port 32765, 32766, 32767
+ * and transfers fabricated buffers or data copied from stdin.
+ * Copyright 2013-2016: Michael Felt and AIXTOOLS.NET
+ *
+ * $Date: 2017-03-24 09:46:19 +0000 (Fri, 24 Mar 2017) $
+ * $Revision: 230 $
+ * $Author: michael $
+ * $Id: attcp_report.c 230 2017-03-24 09:46:19Z michael $
  */
 
 #include <config.h>
@@ -200,13 +205,20 @@ prusage(r0, r1, e, b, outp)
 	*outp = '\0';
 }
 
-void attcp_rpt(boolean verbose, char fmt, uint64_t nbytes)
+#include <syslog.h>
+void
+attcp_rpt(boolean verbose, char fmt, uint64_t nbytes)
 {
+#define SEVERITY LOG_INFO
 	double cput, realt;		/* user, real time (seconds) */
 	double time_busy(), time_real();
+	int	allow_severity = SEVERITY;
+	char	*str;
 
 	realt = time_real();
 	cput = time_busy();
+	str = outfmt((nbytes/realt),fmt);
+	syslog(allow_severity, "%s", str);
 
 #ifdef HAVE_PERFSTAT
 	perfstat_report(verbose);
@@ -216,11 +228,9 @@ void attcp_rpt(boolean verbose, char fmt, uint64_t nbytes)
         if( realt <= 0.0 )  realt = 0.001;
 
         if (verbose < 1) {
-                fprintf(stdout,
-                "%s\n",
-                outfmt((nbytes/realt),fmt));
-        } else
-        {
+                fprintf(stdout, "%s\n", str);
+        }
+	else {
 	  double mbsec = (nbytes/realt)/(double) (1024*1024);
 
           fprintf(stdout,"ATTCP Summary\n");
@@ -235,5 +245,4 @@ void attcp_rpt(boolean verbose, char fmt, uint64_t nbytes)
 		sockCalls, nbytes / sockCalls,
 		(realt)/((double)sockCalls)*1024.0, ((double)sockCalls)/realt);
 	}
-
 }
