@@ -6,10 +6,10 @@
  * and transfers fabricated buffers or data copied from stdin.
  * Copyright 2013-2016: Michael Felt and AIXTOOLS.NET
  *
- * $Date: 2017-03-24 09:46:19 +0000 (Fri, 24 Mar 2017) $
- * $Revision: 230 $
+ * $Date: 2017-04-12 18:37:47 +0000 (Wed, 12 Apr 2017) $
+ * $Revision: 239 $
  * $Author: michael $
- * $Id: attcp_report.c 230 2017-03-24 09:46:19Z michael $
+ * $Id: attcp_report.c 239 2017-04-12 18:37:47Z michael $
  */
 
 #include <config.h>
@@ -207,42 +207,47 @@ prusage(r0, r1, e, b, outp)
 
 #include <syslog.h>
 void
+#define SEVERITY LOG_INFO
+
 attcp_rpt(boolean verbose, char fmt, uint64_t nbytes)
 {
-#define SEVERITY LOG_INFO
-	double cput, realt;		/* user, real time (seconds) */
+	double physc, realtime;		/* user, real time (seconds) */
 	double time_busy(), time_real();
 	int	allow_severity = SEVERITY;
-	char	*str;
 
-	realt = time_real();
-	cput = time_busy();
-	str = outfmt((nbytes/realt),fmt);
-	syslog(allow_severity, "%s", str);
+	realtime = time_real();
+	physc = time_busy();
+	double mbsec = (nbytes/realtime)/(double) (1024*1024);
 
-#ifdef HAVE_PERFSTAT
+#ifdef HAVE_LIBPERFSTAT
 	perfstat_report(verbose);
 #endif
 
-	if( cput <= 0.0 )  cput = 0.001;
-        if( realt <= 0.0 )  realt = 0.001;
+	if( physc <= 0.0 )  physc = 0.001;
+        if( realtime <= 0.0 )  realtime = 0.001;
 
-        if (verbose < 1) {
-                fprintf(stdout, "%s\n", str);
-        }
-	else {
-	  double mbsec = (nbytes/realt)/(double) (1024*1024);
-
+	if (verbose < 1)
+		fprintf(stdout, "%s\n",  outfmt((nbytes/realtime),fmt));
+	else
+	{
           fprintf(stdout,"ATTCP Summary\n");
 
-          fprintf(stdout,"%8s %10s %8s %6s %10s %8s %7s %9s\n",
-		"MB/Sec", "MByte", "seconds", "%busy", "Calls", "B/call", "ms/call", "call/sec");
-          fprintf(stdout,"%8s %10s %8s %6s %10s %8s %7s %9s\n",
-		"========", "========", "=======", "=====",
+          fprintf(stdout,"%8s %10s %8s %8s %6s %10s %8s %7s %9s\n",
+		"MB/Sec", "MByte", "seconds", "physc", "%busy", "Calls", "B/call", "ms/call", "call/sec");
+          fprintf(stdout,"%8s %10s %8s %8s %6s %10s %8s %7s %9s\n",
+		"========", "========", "=======", "=======", "=====",
 		"=========","======","=======","========");
-          fprintf(stdout, "%8.2f %10llu %8.2f %6.1f %10lu %8llu %7.2f %9.1f\n",
-		mbsec, nbytes/(1024*1024), realt, (100*cput)/realt,
+          fprintf(stdout, "%8.2f %10llu %8.2f %8.2f %6.1f %10lu %8llu %7.2f %9.1f\n",
+		mbsec, nbytes/(1024*1024), realtime, physc, (100*physc)/realtime,
 		sockCalls, nbytes / sockCalls,
-		(realt)/((double)sockCalls)*1024.0, ((double)sockCalls)/realt);
+		(realtime)/((double)sockCalls)*1024.0, ((double)sockCalls)/realtime);
 	}
+	if (verbose > 1)
+          syslog(SEVERITY,"%8s %10s %8s %8s %6s %10s %8s %7s %9s\n",
+		"MB/Sec", "MByte", "seconds", "physc", "%busy", "Calls", "B/call", "ms/call", "call/sec");
+
+        syslog(SEVERITY, "%8.2f %10llu %8.2f %6.1f %10lu %8llu %7.2f %9.1f\n",
+		mbsec, nbytes/(1024*1024), realtime, (100*physc)/realtime,
+		sockCalls, nbytes / sockCalls,
+		(realtime)/((double)sockCalls)*1024.0, ((double)sockCalls)/realtime);
 }

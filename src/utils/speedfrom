@@ -1,3 +1,2 @@
 #!/bin/ksh
-echo $0: performing a 10 second read
 /opt/bin/attcp -p 32766 -f M -i 10 -r -c $*

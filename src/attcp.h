@@ -1,17 +1,16 @@
 /*
  *	A T T C P 
  *
- * Test TCP connection.  Makes a connection on port 55000,55001,55002
+ * Test TCP connection.  Makes a connection on port 32765,32766,32767
  * and transfers fabricated buffers or data copied from stdin.
+ * Copyright 2013-2016: Michael Felt and AIXTOOLS.NET
  *
 
- * $Date:$
- * $Revision:$
- * $Author:$
- * $Id:$
+ * $Date: 2017-04-12 20:08:59 +0000 (Wed, 12 Apr 2017) $
+ * $Revision: 243 $
+ * $Author: michael $
+ * $Id: attcp.h 243 2017-04-12 20:08:59Z michael $
  */
-
-
 #include <pthread.h>
 
 #include <unistd.h>
@@ -36,10 +35,12 @@
 
 #define SA( p )               ( (struct sockaddr *) (p) )
 
-/* 49152 -3 = 49149 */
-#define PORT		((1<<15|1<<14)-3)
-#define PORTREAD	(PORT+1)
-#define PORTSEND	(PORT+2)
+/* port number 49151 is reserved by IANA */
+/* 49152 -4 = 49148 */
+#define EPHEMERAL_LOW	(1<<15)	/* 32768 */
+#define PORT		(EPHEMERAL_LOW-1)
+#define PORTREAD	(PORT-1)
+#define PORTSEND	(PORT-2)
 
 typedef	unsigned long	ulong;
 typedef	unsigned short	ushort;
@@ -59,7 +60,7 @@ typedef struct	attcp_opt {
 	int	nbuf;
 	ulong	buflen;
 	int	sinkmode;	/* role */
-	char	*whereTo;	/* hostname or IP address */
+	char	*peername;	/* hostname or IP address */
 	ushort	port;		/* socket setting */
 	int	udp;		/* transport mode : true udp, false tcp */
 	ulong	bufalign;	/* hmm 1 */
@@ -68,6 +69,8 @@ typedef struct	attcp_opt {
 	char	fmt;		/* -f argument, whatever that is ??? */
 	int	touchdata;
 	int	maxtime;
+	long	maxbytes;
+
 	int	argc;		/* for now */
 	char	**argv;		/* for now */
 }	attcp_opt_t,	*attcp_opt_p;

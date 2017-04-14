@@ -6,10 +6,10 @@
  * and transfers fabricated buffers or data copied from stdin.
  * Copyright 2013-2016: Michael Felt and AIXTOOLS.NET
  *
- * $Date: 2016-01-17 19:09:44 +0000 (Sun, 17 Jan 2016) $
- * $Revision: 179 $
+ * $Date: 2017-04-12 18:37:47 +0000 (Wed, 12 Apr 2017) $
+ * $Revision: 239 $
  * $Author: michael $
- * $Id: attcp_timer.c 179 2016-01-17 19:09:44Z michael $
+ * $Id: attcp_timer.c 239 2017-04-12 18:37:47Z michael $
  */
 #include <config.h>
 #include "attcp.h"
@@ -46,7 +46,7 @@ timer0()
 /*
  * init statistics structures - permit restart when using udp
  */
-#ifdef HAVE_PERFSTAT
+#ifdef HAVE_LIBPERFSTAT
 	perfstat_init();
 	perfstat_start();
 #endif
@@ -64,7 +64,7 @@ timer1()
  */
 	if (ended++)
 		return;
-#ifdef HAVE_PERFSTAT
+#ifdef HAVE_LIBPERFSTAT
 	perfstat_stop();
 #endif
 	gettimeofday(&time1, (struct timezone *)0);
