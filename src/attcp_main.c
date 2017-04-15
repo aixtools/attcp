@@ -1,9 +1,10 @@
 /*
  *	A T T C P  -- M A I N
  *
- * Test TCP connection.  Makes a connection on port PORT, PORTREAD, PORTSEND (32765, 32766, 32767)
- * and transfers fabricated buffers or data copied from stdin.
- * Copyright 2013-2016: Michael Felt and AIXTOOLS.NET
+ * Test TCP connection.
+ * Make a connection on port PORT, PORTREAD, PORTSEND (32765, 32766, 32767)
+ * and transfer fabricated buffers
+ * Copyright 2013-2017: Michael Felt and AIXTOOLS.NET
 
  * $Date: 2017-04-12 20:08:59 +0000 (Wed, 12 Apr 2017) $
  * $Revision: 243 $
@@ -18,9 +19,17 @@
 /*
  * all routines will use the same option settings
  */
-static	attcp_opt_p      ap_opts;
+static attcp_opt_t      A;
+static	attcp_opt_p      a_opts = &A;
 static	boolean	x_flag;
 static	boolean udp;
+
+#ifdef XXXX
+char stats[128];
+unsigned long nbytes;           /* bytes on net */
+unsigned long sockCalls;        /* # of socket() I/O calls */
+double cput, realt;             /* user, real time (seconds) */
+#endif
 
 void
 sigintr( int x)
@@ -64,7 +73,6 @@ char *s;
 /*
  * set global options - these will be inherited by threads
  */
-static attcp_opt_t      A;
 attcp_opt_p attcp_getopt(int argc,char **argv)
 {
 	unsigned long addr_tmp;
@@ -212,27 +220,21 @@ attcp_opt_p attcp_getopt(int argc,char **argv)
 	return(a_opts);
 }
 
-char stats[128];
-unsigned long nbytes;           /* bytes on net */
-unsigned long sockCalls;        /* # of socket() I/O calls */
-double cput, realt;             /* user, real time (seconds) */
-
 main(int argc, char **argv)
 {
 	/*
 	 * static for now, need to come from malloc() in the future
 	 */
 	char	name[256];
-	static attcp_conn_t     C;
 
 	attcp_opt_p      ax;
-	attcp_conn_p     c = &C;
+	attcp_conn_p     c;
 	int		sd; /* socket descriptor */
 
 	/*
-	 * set the static variable
+	 * get the global variables
 	 */
-	ax = ap_opts = attcp_getopt(argc,argv);
+	ax = a_opts = attcp_getopt(argc,argv);
 
 	x_flag = ax->x_flag;	/* for message routines to set -t or -r */
 	udp = (ax->udp != 0);	/* for various routines, mainly read/write */
@@ -240,40 +242,55 @@ main(int argc, char **argv)
 	attcp_log_init(argv[0]);
 
 	/*
+	if (!attcp_pthread_init(ax->threads) {
+		fprintf(stderr, "thread data init failed\n");
+		exit(-1);
+	}
+	if (!attcp_pthread_socket(ax->threads, a_opts) {
+		fprintf(stderr, "thread socket creation failed\n");
+		exit(-1);
+	}
+	if (!attcp_pthread_start(ax->threads) {
+		fprintf(stderr, "pthread creation failed\n");
+		exit(-1);
+	}
 	 * atm - mono-threaded - static Connection structure
 	 */
-	sd = attcp_socket(&C, ap_opts);
-	if (C.sd != sd) {
+	/*
+	 * set socket options in _socket()
+	 */
+	sd = attcp_socket(c, a_opts);
+	if (c->sd != sd) {
 		fprintf(stderr, "socket creation failed\n");
 		exit(-1);
 	}
 	if (ax->verbose > 5)
 		fprintf(stderr,"finished attcp_socket()\n");
 
-	attcp_log_opts(ap_opts);
+	attcp_log_opts(a_opts);
 	if (ax->verbose > 5)
 		fprintf(stderr,"finished attcp_log_opts()\n");
 
-	attcp_setoption( &C, ap_opts);
+	attcp_setoption( c, a_opts);
 	if (ax->verbose > 5)
 		fprintf(stderr,"finished attcp_setoption()\n");
 
 	fflush(stdout);
 	fflush(stderr);
 
-	attcp_connect( &C, ap_opts);
+	attcp_connect( c, a_opts);
 	if (ax->verbose > 5)
 		fprintf(stderr,"finished attcp_connect()\n");
 
-	attcp_log_name(C.sd, name, ax->verbose);
+	attcp_log_name(c->sd, name, ax->verbose);
 	if (ax->verbose > 5)
 		fprintf(stderr,"finished attcp_log_name()\n");
 
-	attcp_xfer( &C, ap_opts);
+	attcp_xfer( c, a_opts);
 	if (ax->verbose > 5)
 		fprintf(stderr,"finished attcp_xfer()\n");
 
-	close (C.sd);
+	close (c->sd);
 	if (ax->verbose > 5)
 		fprintf(stderr,"finished close() of socket\n");
 

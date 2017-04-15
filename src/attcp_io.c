@@ -146,16 +146,16 @@ Nwrite(int sd, void *buf, unsigned count, attcp_conn_p c, attcp_opt_p a_opts)
 {
 	register int cnt;
 	register ulong *sockCalls = &c->sockcalls;
-	struct	sockaddr_in *sinThere;
+	struct	sockaddr_in *sinPeer;
 
 	#ifdef USEALARM
 	if (my_alarm)
 		perfstat_alarm();
 	#endif
 	if( a_opts->udp )  {
-		sinThere = &c->sinThere;
+		sinPeer = &c->sinPeer;
 again:
-		cnt = sendto( sd, buf, count, 0, SA(sinThere), sizeof(*sinThere) );
+		cnt = sendto( sd, buf, count, 0, SA(sinPeer), sizeof(*sinPeer) );
 		*sockCalls += 1;
 		if( cnt<0 && errno == ENOBUFS )  {
 			delay(18000);

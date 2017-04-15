@@ -76,8 +76,10 @@ typedef struct	attcp_opt {
 }	attcp_opt_t,	*attcp_opt_p;
 
 typedef struct	attcp_conn {
+	pthread_t	tid;
+	int		done;
 	struct sockaddr_in
-		sinHere, sinThere, frominet;
+		sinHere, sinPeer;
 	struct hostent	*addr;
 	char	*buf;	/* buffer for I/O read/write */
 	int	sd;	/* socket descriptor */
