@@ -4,7 +4,7 @@
 AC_PREREQ([2.69])
 
 # AC_INIT([FULL-PACKAGE-NAME], [VERSION], [BUG-REPORT-ADDRESS])
-AC_INIT([attcp], [0.6.4], [bug-report@nowhere.to.send])
+AC_INIT([attcp], [0.6.6], [bug-report@nowhere.to.send])
 AC_CONFIG_SRCDIR([src/attcp_main.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
