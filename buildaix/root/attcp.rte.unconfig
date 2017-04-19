@@ -1,0 +1,44 @@
+#!/usr/bin/ksh
+# $Id: fileset.ext.unconfig 140 2015-06-10 20:13:42Z michael $
+# whatever script you use - specify it. The default may not be what you expect.
+# For config it might even be something from the application!
+
+# script to undo configuration of the application
+# This script runs at:
+# 1. installp - installation failed after/during config
+# 2. installp - config_u failed during an update
+# 3. installp -u (when unconfig_d does not exist which is most common)
+
+# Think in terms of application tasks that need to happen - successfully!
+# before the system actually starts removing files. If the unconfig fails
+# AIX is not going to remove anything. Everything you need - in application terms
+# should still be available. i.e., nothing has been removed from the .al files.
+
+# on success exit with 0 status, non-zero will abort the install process
+[[ ! -z ${VERBOSE} ]] && \
+	print -- "+- `pwd` - $0 -+"
+# The line below is as wide as the lines printed during normal installp installs
+# it is provided as a reference
+# print -- "+-----------------------------------------------------------------------------+"
+# remove attcp services from /etc/services and /etc/inetd.conf
+# Copyright Michael Felt and AIXTOOLS, 2013-2016
+
+# $Date: 2016-01-17 11:44:03 +0000 (Sun, 17 Jan 2016) $
+# $Revision: 178 $
+# $Author: michael $
+# $Id: ttcp_inetd.ksh 178 2016-01-17 11:44:03Z michael $
+cp -p /etc/services /etc/services.$$
+cp -p /etc/inetd.conf /etc/inetd.conf.$$
+
+egrep "(ttcpr|ttcps)" /etc/services >/dev/null                                                                                          
+if [[ $? -eq 0 ]]; then
+        egrep -v  "ttcp"  /etc/services.$$ >/etc/services
+fi
+
+egrep "(ttcpr|ttcps)" /etc/inetd.conf >/dev/null
+if [[ $? -eq 0 ]]; then
+        egrep -v "(ttcpr|ttcps)" /etc/inetd.conf.$$ >/etc/inetd.conf
+fi
+refresh -s inetd
+rm -f /etc/inetd.conf.$$ /etc/services.$$
+exit 0
