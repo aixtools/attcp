@@ -17,7 +17,7 @@ ttcps
 
 #buildaix files and directories
 .buildaix/
-buildaix/
+buildaix/*template
 installp/
 
 #autotools
