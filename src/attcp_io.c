@@ -140,14 +140,36 @@ attcp_rcvr(attcp_conn_p c)
                         nbytes += nread;
                 } while (io_cnt-- && (nbytes <= maxbytes));
         } else {
+#ifdef DEBUG
+		ulong looper = 0;
+		fprintf(stderr,"C:%08X start time loop ", c);
+		fprintf(stderr,"tid %ld sd:%d ", c->tid, c->sd);
+		fprintf(stderr,"etime:%d nbytes:%lld maxbytes:%lld\n",
+			(int) elapsed_time(), nbytes, maxbytes);
+		fprintf(stderr,"c:%08X sd:%d buf:%08X len:%ld\n",
+			c, sd, buf, io_size);
+		fflush(stderr);
+#endif
                 do {
                         nread = Nread(sd,buf,io_size,c);
                         if (nread < 0)
                                 break;
+
+#ifdef DEBUG
+			looper++;
+			if (nbytes == 0)
+				fprintf(stderr,"attcp_rcvr: nread: %d bytes\n", nread);
+			else if ((looper % 100000) == 0)
+				fprintf(stderr,"\ncio:%d et:%04.2f nb:%lld",
+					c->io_done, elapsed_time(), nbytes - maxbytes);
+			else if ((looper % 10000) == 0)
+				fputc('.', stderr);
+#endif
                         nbytes += nread;
-                } while ((elapsed_time() <= maxtime)
-                        && (nbytes <= maxbytes));
+                } while (!c->io_done && (elapsed_time() < maxtime) && (nbytes <= maxbytes));
         }
+	c->io_done++;
+	c->nbytes = nbytes;
 }
 attcp_xfer( attcp_conn_p c)
 {
