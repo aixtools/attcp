@@ -14,9 +14,11 @@
 #include <config.h>
 #include "attcp.h"
 
+#ifdef XXX
 struct sockaddr_in sinme;
 struct sockaddr_in sinhim;
 struct sockaddr_in frominet;
+#endif
 
 int domain;
 socklen_t fromlen;
@@ -83,6 +85,5 @@ Options specific to -r:\n\
 
 
 char stats[128];
-unsigned long nbytes;		/* bytes on net */
-unsigned long sockCalls;	/* # of socket() I/O calls */
+uint64_t sockCalls;	/* # of socket() I/O calls */
 double cput, realt;		/* user, real time (seconds) */

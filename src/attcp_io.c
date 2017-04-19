@@ -15,78 +15,166 @@
 #include <string.h>
 #include "attcp.h"
 
-attcp_xfer( attcp_conn_p c, attcp_opt_p a_opts)
+attcp_xmit( attcp_conn_p c)
 {
-	register void	*buf = c->buf;
-	int	sd = c->sd;
-	register int	nbuf = a_opts->nbuf;
-	register int	buflen = a_opts->buflen;
-	register uint64_t	*nbytes = &c->nbytes;
-	register int	cnt;
+	void		*buf = c->buf;
+	int		sd = c->sd;
+	attcp_set_p	cs = &c->settings;
+	int		io_cnt = cs->io_count;
+	uint64_t	io_size = cs->io_size;
+	uint64_t	nbytes = 0;
+	uint64_t	maxbytes = cs->maxbytes;
+	int		maxtime = cs->maxtime;
+	int		nread = 55;
 
-	timer0();
+#ifdef VERBOSE
+	uint64_t	*io_sz;
+	io_sz = &cs->io_size;
+	fprintf(stderr,"XMIT 0: C:%08X tid %ld sd:%d %s ", cs, c->tid, c->sd,
+			cs->transport == SOCK_DGRAM ? "udp" : "tcp");
+	fprintf(stderr,"time:%d nbytes:%d io_sz:%d maxbytes:%d\n",
+			cs->maxtime, c->nbytes, cs->io_size, cs->maxbytes);
+	fprintf(stderr,"XMIT 0: C:%08X tid %ld sd:%d %s ", cs, c->tid, c->sd,
+			cs->transport == SOCK_DGRAM ? "udp" : "tcp");
+	fprintf(stderr,"time:%d nbytes:%d io_sz:%d maxbytes:%d\n",
+			cs->maxtime, c->nbytes, cs->io_size, cs->maxbytes);
+	fprintf(stderr,"XMIT 1: C:%08X tid %ld sd:%d ", cs, c->tid, c->sd);
+	fprintf(stderr,"%s time:%d nbytes:%ld ",
+			cs->transport == SOCK_DGRAM ? "udp" : "tcp",
+			cs->maxtime, c->nbytes);
+	fprintf(stderr,"io_sz:%X cs->io_sz:%d ",
+			&cs->io_size, cs->io_size);
+	fprintf(stderr,"io_sz:%X *io_sz:%ld ",
+			io_sz, *io_sz);
+	fprintf(stderr,"io_sz:%X cs->io_sz:%d\n",
+			&io_size, io_size);
+	fflush(stderr);
+#endif
+
+	pattern( buf, io_size );
+	if(cs->transport == SOCK_DGRAM)
+		(void)Nwrite( sd, buf, 4, c); /* wakeup rcvr */
+	if (maxtime <= 0) { /* use number of buffers instead */
+		do {
+			nread = Nwrite(sd,buf,io_size,c);
+			if (nread < 0)
+				break;
+			nbytes += nread;
+		} while (io_cnt-- && (nbytes <= maxbytes) && !c->io_done);
+	} else {
+#ifdef DEBUG
+		fprintf(stderr,"C:%08X start time loop ", c);
+		fprintf(stderr,"tid %ld sd:%d ", c->tid, c->sd);
+		fprintf(stderr,"etime:%d nbytes:%lld maxbytes:%lld\n",
+			(int) elapsed_time(), nbytes, maxbytes);
+		fprintf(stderr,"c:%08X sd:%d buf:%08X len:%ld\n",
+			c, sd, buf, io_size);
+		fflush(stderr);
+#endif
+		do {
+			nread = Nwrite(sd,buf,io_size,c);
+			if (nread <= 0)	{
+				mes("xmit break");
+				break;
+			}
+			nbytes = nbytes + nread;
+		} while (!c->io_done && ((int) elapsed_time() < maxtime) && (nbytes <= maxbytes));
+	}
+	if(cs->transport == SOCK_DGRAM)
+		Nwrite( sd, buf, 4, c); /* rcvr end */
+	c->io_done++;
+	c->nbytes = nbytes;
+#ifdef VERBOSE
+	fprintf(stderr,"XX: %lld %lld %lld\n", nbytes, maxbytes, nbytes-maxbytes);
+	fprintf(stderr,"XMIT 2: C:%08X tid %ld sd:%d ", cs, c->tid, c->sd);
+	fprintf(stderr,"%s time:%d nbytes:%d io_sz:%d maxbytes:%d\n",
+			cs->transport == SOCK_DGRAM ? "udp" : "tcp",
+			cs->maxtime, c->nbytes, cs->io_size, cs->maxbytes);
+	fprintf(stderr,"XMIT 4: C:%08X tid %ld sd:%d %s ", cs, c->tid, c->sd,
+			cs->transport == SOCK_DGRAM ? "udp" : "tcp");
+	fprintf(stderr,"time:%d nbytes:%d io_sz:%d maxbytes:%d\n",
+			cs->maxtime, c->nbytes, cs->io_size, cs->maxbytes);
+#ifdef XXX
+	fprintf(stderr,"%s time:%d nbytes:%d io_sz:%d\n",
+			cs->transport == SOCK_DGRAM ? "udp" : "tcp",
+			cs->maxtime, c->nbytes, cs->io_size);
+#endif
+	fprintf(stderr,"XMIT 3: C:%08X tid %ld sd:%d ", cs, c->tid, c->sd);
+	fprintf(stderr,"etime:%d nbytes:%lld maxbytes:%lld\n",
+			(int) elapsed_time(), nbytes, maxbytes);
+	fflush(stderr);
+#endif
+}
+attcp_rcvr(attcp_conn_p c)
+{
+	void		*buf = c->buf;
+	int		sd = c->sd;
+	attcp_set_p	cs = &c->settings;
+	int		io_cnt = cs->io_count;
+	int		io_size = cs->io_size;
+	uint64_t	maxbytes = cs->maxbytes;
+	int		maxtime = cs->maxtime;
+	uint64_t	nbytes = 0;
+	int		nread;
+	int		going = 0;
+
+	if (cs->transport == SOCK_DGRAM) {
+		while ((nread=Nread(sd, buf, io_size, c)) > 0)  {
+			if( nread <= 4 )  {
+				/*
+				 * restart timer0 when udp!
+				 */
+				if( going++ == 0 )
+					timer0(RUSAGE_THREAD, c);
+				else
+					break;	/* "EOF" */
+			} else {
+				nbytes += nread;
+			}
+		}
+	} else if (maxtime <= 0) { /* use number of buffers instead */
+                do {
+                        nread = Nread(sd,buf,io_size,c);
+                        if (nread < 0)
+                                break;
+                        nbytes += nread;
+                } while (io_cnt-- && (nbytes <= maxbytes));
+        } else {
+                do {
+                        nread = Nread(sd,buf,io_size,c);
+                        if (nread < 0)
+                                break;
+                        nbytes += nread;
+                } while ((elapsed_time() <= maxtime)
+                        && (nbytes <= maxbytes));
+        }
+}
+attcp_xfer( attcp_conn_p c)
+{
+	timer0(RUSAGE_THREAD, c);
 	errno = 0;
 
-	if (a_opts->x_flag)  { /* client mode */
-		pattern( buf, a_opts->buflen );
-		if(a_opts->udp)  (void)Nwrite( sd, buf, 4, c, a_opts); /* rcvr start */
-		if (0 == a_opts->maxtime) {
-			while (nbuf-- && Nwrite(sd,buf,buflen, c, a_opts) == buflen)
-				*nbytes += buflen;
-		} else {
-			while (Nwrite(sd,buf,a_opts->buflen,c,a_opts) == a_opts->buflen) {
-				*nbytes += a_opts->buflen;
-				if (elapsed_time() > a_opts->maxtime) {
-					break;
-				}
-			}
-		}
-		if(a_opts->udp)  (void)Nwrite( sd, buf, 4, c, a_opts); /* rcvr end */
+#ifdef DEBUG
+	fprintf(stderr,"xfer 1: C:%08X tid %ld sd:%d\n", c, c->tid, c->sd);
+#endif
+	if (c->settings.x_flag)  { /* client send mode */
+		attcp_xmit(c);
 	} else { /* server mode - listening */
-		if (a_opts->udp) {
-			while ((cnt=Nread(sd, buf, buflen, c, a_opts)) > 0)  {
-				static int going = 0;
-				if( cnt <= 4 )  {
-					if( going )
-						break;	/* "EOF" */
-					going = 1;
-					/*
-					 * restart timer0 when udp!
-					 */
-					timer0();
-				} else {
-					*nbytes += cnt;
-				}
-			}
-		} else {
-			int total_bytes = a_opts->nbuf * buflen;
-			while ((cnt=Nread(sd,buf,buflen, c, a_opts)) > 0)  {
-				/*
-				fprintf(stderr,"xfer:Nread\n");
-				*/
-				*nbytes += cnt;
-				if (a_opts->c_flag && (a_opts->maxtime == 0 ) ) {
-					total_bytes -= cnt;
-					if (total_bytes <= 0) {
-						break;
-					}
-				}
-				if (a_opts->maxtime != 0) {
-					if (elapsed_time() > a_opts->maxtime) {
-						break;
-					}
-				}
-			}
-		}
+		attcp_rcvr(c);
 	}
-	if(errno) err("IO XXX");
-	timer1();
-	if(a_opts->udp&&a_opts->x_flag)  {
-		(void)Nwrite( sd, buf, 4, c, a_opts); /* rcvr end */
-		(void)Nwrite( sd, buf, 4, c, a_opts); /* rcvr end */
-		(void)Nwrite( sd, buf, 4, c, a_opts); /* rcvr end */
-		(void)Nwrite( sd, buf, 4, c, a_opts); /* rcvr end */
+	timer1(RUSAGE_THREAD, c);
+	/* if XMIT and UDP try to ensure client knows to stop */
+	if ((c->settings.transport == SOCK_DGRAM) && c->settings.x_flag)  {
+		int sd = c->sd;
+		char buf[4];
+		(void)Nwrite( sd, buf, 4, c); /* signal rcvr end */
+		(void)Nwrite( sd, buf, 4, c); /* signal rcvr end */
+		(void)Nwrite( sd, buf, 4, c); /* rcvr end */
+		(void)Nwrite( sd, buf, 4, c); /* rcvr end */
 	}
+#ifdef DEBUG
+	fprintf(stderr,"xfer 2: C:%08X tid %ld sd:%d\n", c, c->tid, c->sd);
+#endif
 }
 
 pattern( cp, cnt )
@@ -104,21 +192,23 @@ register int cnt;
 /*
  *			N R E A D
  */
-Nread( int sd, void *buf, unsigned count, attcp_conn_p c, attcp_opt_p a_opts)
+Nread( int sd, void *buf, unsigned count, attcp_conn_p c)
 {
-	register ulong *sockCalls = &c->sockcalls;
-	struct sockaddr_in from;
-	socklen_t len = sizeof(from);
-	register int cnt;
-	#ifdef USEALARM
+	ulong *sockCalls = &c->sockcalls;
+	struct	sockaddr_in *sinPeer;
+	socklen_t	peerlen = sizeof(*sinPeer);
+	ssize_t cnt;
+
+#ifdef USEALARM
 	if (my_alarm)
 		perfstat_alarm();
-	#endif
-	if( a_opts->udp )  {
-		cnt = recvfrom( sd, buf, count, 0, SA(&from), &len );
+#endif
+	if( c->settings.transport == SOCK_DGRAM )  {
+		sinPeer = &c->sinPeer;
+		cnt = recvfrom( sd, buf, count, 0, SA(sinPeer), &peerlen );
 		*sockCalls += 1;
 	} else {
-		if( a_opts->B_flag )
+		if( c->settings.B_flag )
 			cnt = mread( sd, buf, count, c );	/* fill buf */
 		else {
 again2:			
@@ -129,7 +219,7 @@ again2:
 			}
 			*sockCalls += 1;
 		}
-		if (a_opts->touchdata && cnt > 0) {
+		if (c->settings.touchdata && cnt > 0) {
 			register int i = cnt, sum;
 			register char *b = buf;
 			while (i--)
@@ -142,7 +232,7 @@ again2:
 /*
  *			N W R I T E
  */
-Nwrite(int sd, void *buf, unsigned count, attcp_conn_p c, attcp_opt_p a_opts)
+Nwrite(int sd, void *buf, unsigned count, attcp_conn_p c)
 {
 	register int cnt;
 	register ulong *sockCalls = &c->sockcalls;
@@ -152,7 +242,7 @@ Nwrite(int sd, void *buf, unsigned count, attcp_conn_p c, attcp_opt_p a_opts)
 	if (my_alarm)
 		perfstat_alarm();
 	#endif
-	if( a_opts->udp )  {
+	if( c->settings.transport == SOCK_DGRAM )  {
 		sinPeer = &c->sinPeer;
 again:
 		cnt = sendto( sd, buf, count, 0, SA(sinPeer), sizeof(*sinPeer) );

@@ -19,33 +19,41 @@
 #define SEVERITY LOG_INFO
 #define LOG_OPTION (LOG_PID|LOG_NDELAY|LOG_CONS)
 
+/*
+ * Report connection options
+ */
 attcp_log_opts(attcp_opt_p a_opts)
 {
-	int     allow_severity = SEVERITY;      /* run-time adjustable */
-	int     deny_severity = LOG_WARNING;    /* ditto */
-	char msg1[128];
-	char msg2[128];
-	char msg3[128];
-	/* Report connection options */
+	int	allow_severity	= SEVERITY;      /* run-time adjustable */
+	int	deny_severity	= LOG_WARNING;    /* ditto */
+	attcp_set_p
+		cs		= &a_opts->settings;
+	char	msg1[128];
+	char	msg2[128];
+	char	msg3[128];
 	sprintf(msg1, "%s%s%s.%d",
-	    a_opts->udp    ? "udp" : "tcp",
-	    a_opts->x_flag ? "=>" : "<=",
+	    cs->transport == SOCK_DGRAM ? "udp" : "tcp",
+	    cs->x_flag ? "=>" : "<=",
 	    a_opts->peername,
 	    a_opts->port);
 	/*
 	 * looking for use of getnameinfo() for after connect!
 	 */
 
-	if (a_opts->maxtime > 0)
-		sprintf(msg2, "TIMED: buflen=%d, time=%d sec",
-		    a_opts->buflen, a_opts->maxtime);
+	/*
+	 * expected bytes: min(maxBytes,io_count * io_size);
+	 * WORRY about format later!
+	 */
+	if (cs->maxtime > 0)
+		sprintf(msg2, "TIMED: max:%0.2f, buflen=%d, time=%d sec",
+		    cs->io_size, cs->maxtime);
 	else
 		sprintf(msg2, "SIZED: buflen=%d, bytes=%uMB, nbuf=%d",
-		    a_opts->buflen, (a_opts->buflen * a_opts->nbuf) / (1024 * 1024), a_opts->nbuf);
+		    cs->io_size, (cs->io_size * cs->io_count) / (1024 * 1024), cs->io_size);
 
 	*msg3 = 0; /* null terminate, just in case */
-	if (a_opts->sockbufsize)
-		sprintf(msg3, ", sockbufsize=%d", a_opts->sockbufsize);
+	if (cs->sockbufsize)
+		sprintf(msg3, ", sockbufsize=%d", cs->sockbufsize);
 
 	syslog(LOG_INFO, "%s %s%s", msg1, msg2, msg3);
 }
@@ -70,7 +78,7 @@ attcp_log_init(char *prgname)
  * print the endpoints of a socket
  */
 void
-attcp_log_name(int sd, char *buf, int verbose)
+attcp_log_socket(int sd, char *buf, int verbose)
 {
 	struct sockaddr_in peer,sock;
 	socklen_t peerlen = sizeof(peer);

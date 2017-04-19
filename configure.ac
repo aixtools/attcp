@@ -26,6 +26,7 @@ AC_PROG_INSTALL
 # Checks for libraries.
 # FIXME: Replace `main' with a function in `-lperfstat':
 AC_CHECK_LIB([perfstat], [perfstat_cpu_total])
+AC_CHECK_LIB([pthread], [pthread_create])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h stdlib.h string.h strings.h sys/socket.h sys/time.h syslog.h unistd.h])

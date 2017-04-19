@@ -18,9 +18,10 @@
 /*
  * create a socket
  */
-int
-attcp_socket(attcp_conn_p c, attcp_opt_p a_opts)
+void
+attcp_socket(attcp_conn_p c, attcp_opt_p a)
 {
+	attcp_set_p	opts = &c->settings;
 	static socket_cnt = 0;
 	char message[128];
 	int addr_family = AF_INET;
@@ -33,12 +34,12 @@ attcp_socket(attcp_conn_p c, attcp_opt_p a_opts)
 
 	bzero((char *)sinHere, sizeof(*sinHere));
 
-	if ((sd = socket(addr_family, a_opts->udp?SOCK_DGRAM:SOCK_STREAM, 0)) < 0)
+	if ((sd = socket(addr_family, opts->transport, 0)) < 0)
 		err("socket");
-	if(a_opts->x_flag | a_opts->c_flag)  { /* xmit or call */
+	if(opts->x_flag | opts->c_flag)  { /* xmit or call */
 		sinHere->sin_port = 0;		/* free choice */
 	} else { /* rcvr */
-		sinHere->sin_port =  htons(a_opts->port);
+		sinHere->sin_port =  htons(a->port);
 	}
 	if (bind(sd, SA(sinHere), sizeof(*sinHere)) < 0)
 		err("bind");
@@ -48,11 +49,13 @@ attcp_socket(attcp_conn_p c, attcp_opt_p a_opts)
 	/*
 	 * setup sinPeer is xmit or call
 	 */
-	if(a_opts->x_flag | a_opts->c_flag)  { /* xmit or call */
-		if (a_opts->peername == NULL)
+	if(opts->x_flag | opts->c_flag)  { /* xmit or call */
+		if (a->peername == NULL) {
+			mes("peername is NULL");
 			usage();
+		}
 
-		peername = a_opts->peername;
+		peername = a->peername;
 		bzero((char *)sinPeer, sizeof(*sinPeer));
 
 		/* prepare msg for just in case ! */
@@ -71,59 +74,55 @@ attcp_socket(attcp_conn_p c, attcp_opt_p a_opts)
 			bcopy(addr->h_addr,(char*)&addr_tmp, addr->h_length);
 			sinPeer->sin_addr.s_addr = addr_tmp;
 		}
-		sinPeer->sin_port = htons(a_opts->port);
+		sinPeer->sin_port = htons(a->port);
 	}
-	/*
-	 * if not xmit or call, sinPeer is filled when we accept()
-	 */
-	return(sd);
 }
 
 /*
  * set options on a socket
  */
-attcp_setoption( attcp_conn_p c, attcp_opt_p a_opts)
+attcp_setoption( attcp_conn_p c)
 {
 	int sd = c->sd;
+	attcp_set_p	opts = &c->settings;
 	int one = 1;
 #if defined(SO_SNDBUF) || defined(SO_RCVBUF)
-	if (a_opts->sockbufsize) {
-		if (a_opts->verbose > 4)	{
-			fprintf(stderr, "\nsockbufsize: %0x", a_opts->sockbufsize);
-			fprintf(stderr, "\nsockbufsize: x_flag:%d\n", a_opts->x_flag);
+	if (opts->sockbufsize) {
+		if (opts->verbosity > 4)	{
+			fprintf(stderr, "\nsockbufsize: %0x", opts->sockbufsize);
+			fprintf(stderr, "\nsockbufsize: x_flag:%d\n", opts->x_flag);
 		}
-		if (a_opts->x_flag) {
+		if (opts->x_flag) {
 			if (setsockopt(sd,
 			    SOL_SOCKET, SO_SNDBUF,
-			    &a_opts->sockbufsize, sizeof(a_opts->sockbufsize)) < 0)
+			    &opts->sockbufsize, sizeof(opts->sockbufsize)) < 0)
 				err("setsockopt: sndbuf");
-			if (a_opts->verbose > 4)
+			if (opts->verbosity > 4)
 				mes("sndbuf");
 		} else {
 			if (setsockopt(sd,
 			    SOL_SOCKET, SO_RCVBUF,
-			    &a_opts->sockbufsize, sizeof(a_opts->sockbufsize)) < 0)
+			    &opts->sockbufsize, sizeof(opts->sockbufsize)) < 0)
 				err("setsockopt: rcvbuf");
-			if (a_opts->verbose > 4)
+			if (opts->verbosity > 4)
 				mes("rcvbuf");
 		}
 	}
 #endif
-	/* options = 0 || SO_DEBUG */
-	if (a_opts->options)  {
+	if (opts->so_options)  {
 		if( setsockopt(sd,
-		    SOL_SOCKET, a_opts->options,
+		    SOL_SOCKET, opts->so_options,
 		    &one, sizeof(one)) < 0)
 			err("setsockopt");
 	}
 #ifdef TCP_NODELAY
-	if (a_opts->nodelay) {
+	if (opts->no_delay) {
 		struct protoent *p;
 		p = getprotobyname("tcp");
 		if( p && setsockopt(sd, p->p_proto, TCP_NODELAY, 
 		    &one, sizeof(one)) < 0)
-			err("setsockopt: nodelay");
-		mes("nodelay");
+			err("setsockopt: no_delay");
+		mes("no_delay");
 	}
 #endif
 }
@@ -132,57 +131,57 @@ attcp_setoption( attcp_conn_p c, attcp_opt_p a_opts)
  * connect a socket
  */
 void
-attcp_connect( attcp_conn_p c, attcp_opt_p a_opts)
+attcp_connect( attcp_conn_p c)
 {
-	register char *buf;
 	int	sd = c->sd;
-	register int nbuf = a_opts->nbuf;
-	register int buflen = a_opts->buflen;
-	struct	sockaddr_in	*sinPeer = &c->sinPeer;
+	attcp_set_p	opts = &c->settings;
+	struct sockaddr_in	*peer;
+	socklen_t	peerlen = sizeof(*peer);
+	peer = &c->sinPeer;
 
-	if (a_opts->udp && a_opts->buflen < 5) {
-		a_opts->buflen = 5;		/* send more than the sentinel size */
+	if (opts->transport == SOCK_DGRAM) {
+		/* must send more than the sentinel size */
+		if (opts->io_size < 5)
+			opts->io_size = 5;
+		/* connectionless, done for now */
+		return;
 	}
 
-	if ( (buf = (char *)malloc(a_opts->buflen)) == (char *)NULL)
-		err("malloc");
-	c->buf = buf;
-
-	if (a_opts->udp)
-		return;
 	/*
-	 * TCP - either connect with peer
+	 * connect with specified peer endpoint - should be TCP
 	 * or listen() - waiting for a peer to request a connection
 	 * - connect() is what is expected - with the inetd.conf waiting
 	 */
-	if (a_opts->x_flag || a_opts->c_flag) {		/* connect with peer */
-		/* We are the client if transmitting */
-		if(connect(sd, SA(sinPeer), sizeof(*sinPeer) ) < 0)
+	if (opts->x_flag || opts->c_flag) {		/* connect with peer */
+		if(connect(sd, SA(peer), peerlen) < 0)
 			err("connect");
-		/* if (!a_opts->q_flag) mes("connect"); */
-	} else {					/* listen/wait for connection */
-		struct sockaddr_in	*peer;
-		socklen_t	peerlen;
-		peer = &c->sinPeer;
+	} else {	/* listen/wait for connection */
 
+		struct sockaddr_in	peer;
 		/*
 		 * otherwise, we are the server and 
 		 * should listen for the connections
 		 */
-		if (!a_opts->q_flag)
+		if (!opts->q_flag)
 			mes("listen");
 		listen(sd,0);   /* allow a queue of 0 */
-		/* options = 0 || SO_DEBUG */
-		if(a_opts->options)  {
+		if (!opts->q_flag)
+			mes("heard");
+		if((sd=accept(sd, SA(&peer), &peerlen) ) < 0)
+			err("accept failed");
+		if (!opts->q_flag)
+			mes("accept OK");
+		if(opts->so_options)  { /* set options on new socket */
 			int one = 1;
-			if( setsockopt(sd, SOL_SOCKET, a_opts->options,
-					&one, sizeof(one)) < 0)
-				err("setsockopt");
+			if( setsockopt(sd, SOL_SOCKET, opts->so_options,
+			    &one, sizeof(one)) < 0)
+				err("setsockopt after accept()");
 		}
-		peerlen = sizeof(*peer);
-		if((sd=accept(sd, SA(peer), &peerlen) ) < 0)
-			err("accept");
-		if (!a_opts->q_flag)
-			mes("accept");
+		c->sd = sd;
+		/*
+		 * could actually verify the connections
+		 * but this will work with 'attcp' setup as a daemon
+		 */
+		c->sinPeer = peer;
 	}
 }

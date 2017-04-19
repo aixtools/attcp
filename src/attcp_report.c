@@ -19,7 +19,6 @@
 typedef	int	boolean;
 
 extern char stats[128];
-extern unsigned long sockCalls;	/* # of socket() I/O calls */
 
 char *
 outfmt(double b, char fmt)
@@ -237,7 +236,7 @@ attcp_rpt(boolean verbose, char fmt, uint64_t nbytes)
           fprintf(stdout,"%8s %10s %8s %8s %6s %10s %8s %7s %9s\n",
 		"========", "========", "=======", "=======", "=====",
 		"=========","======","=======","========");
-          fprintf(stdout, "%8.2f %10llu %8.2f %8.2f %6.1f %10lu %8llu %7.2f %9.1f\n",
+          fprintf(stdout, "%8.2f %10llu %8.2f %8.2f %6.1f %10llu %8llu %7.2f %9.1f\n",
 		mbsec, nbytes/(1024*1024), realtime, physc, (100*physc)/realtime,
 		sockCalls, nbytes / sockCalls,
 		(realtime)/((double)sockCalls)*1024.0, ((double)sockCalls)/realtime);
@@ -246,7 +245,7 @@ attcp_rpt(boolean verbose, char fmt, uint64_t nbytes)
           syslog(SEVERITY,"%8s %10s %8s %8s %6s %10s %8s %7s %9s\n",
 		"MB/Sec", "MByte", "seconds", "physc", "%busy", "Calls", "B/call", "ms/call", "call/sec");
 
-        syslog(SEVERITY, "%8.2f %10llu %8.2f %6.1f %10lu %8llu %7.2f %9.1f\n",
+        syslog(SEVERITY, "%8.2f %10llu %8.2f %6.1f %10llu %8llu %7.2f %9.1f\n",
 		mbsec, nbytes/(1024*1024), realtime, (100*physc)/realtime,
 		sockCalls, nbytes / sockCalls,
 		(realtime)/((double)sockCalls)*1024.0, ((double)sockCalls)/realtime);
