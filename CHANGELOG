@@ -1,7 +1,18 @@
-TODO:
-* enhance and enlarge syslog() usage
-* execute with one thread created out of main
-* create XX threads in parallel
+* enhance syslog reports - to include thread details
+0.6.6.0: 2017-04-19
+* now runs 'thread' based, xfer is always a thread - i.e., ps -p <PID> -mo THREAD will
+  always show at least two threads (one or more for socket communication and the initial
+  thread that starts the others and presents the usage value(s) at the end
+* better integration with syslog
+* modify speedto and speedfrom to call /usr/bin/sh rather /usr/bin/ksh
+
+0.6.5.0: 2017-04-14
+* quick release with improved syslog reporting - 1st release
+
+0.6.4.X: 2016 several dates
+* several releases to improve packaging - automatic update of /etc/services and /etc/inetd.conf
+* changed the port numbers used in /etc/services and speedto, speedfrom scripts
+
 0.6.4.0: 2015-12-13
 * Rework structure to be suitable for autools
 
