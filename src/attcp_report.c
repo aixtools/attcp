@@ -42,19 +42,24 @@ outfmt(double b, char fmt)
 	    sprintf(obuf, "%.2f", b );
 	    break;
 	case 'g':
+/*
 	    sprintf(obuf, "%.2f Gbit", b * 8.0 / 1024.0 / 1024.0 / 1024.0);
+ * stop using the serial line formula, but come closer to the actual frame formula
+ * and add extra "raw value" based on packet and ethernet frame efficiency
+ */
+	    sprintf(obuf, "%.2f Gbit", b / 0.975 / 1024.0 / 1024.0 / 1024.0);
 	    break;
 	case 'k':
-	    sprintf(obuf, "%.2f Kbit", b * 8.0 / 1024.0);
+	    sprintf(obuf, "%.2f Kbit", b / 0.975 / 1024.0);
 	    break;
 	case 'm':
-	    sprintf(obuf, "%.2f Mbit", b * 8.0 / 1024.0 / 1024.0);
+	    sprintf(obuf, "%.2f Mbit", b / 0.975 / 1024.0 / 1024.0);
 	    break;
 	case 'b':
-	    sprintf(obuf, "%.2f bit", b * 8.0 );
+	    sprintf(obuf, "%.2f bit", b / 0.975 );
 	    break;
 	case 'r':
-	    sprintf(obuf, "%.2f", b * 8);
+	    sprintf(obuf, "%.2f", b / 0.975 );
 	    break;
     }
     return obuf;
