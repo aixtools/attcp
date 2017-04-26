@@ -25,6 +25,9 @@ outfmt(double b, char fmt)
 {
     static char obuf[50];
     switch (fmt) {
+/*
+ * calculate Bytes per sec - formated to 'fmt'  from the RAW Bytes per sec value - b
+ */
 	case 'G':
 	    sprintf(obuf, "%.2f GB", b / 1024.0 / 1024.0 / 1024.0);
 	    break;
@@ -43,9 +46,7 @@ outfmt(double b, char fmt)
 	    break;
 	case 'g':
 /*
-	    sprintf(obuf, "%.2f Gbit", b * 8.0 / 1024.0 / 1024.0 / 1024.0);
- * stop using the serial line formula, but come closer to the actual frame formula
- * and add extra "raw value" based on packet and ethernet frame efficiency
+ * approximate bps from the Bytes per sec value - b
  */
 	    sprintf(obuf, "%.2f Gbit", b / 0.975 / 1024.0 / 1024.0 / 1024.0);
 	    break;
