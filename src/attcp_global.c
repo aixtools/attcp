@@ -14,12 +14,6 @@
 #include <config.h>
 #include "attcp.h"
 
-#ifdef XXX
-struct sockaddr_in sinme;
-struct sockaddr_in sinhim;
-struct sockaddr_in frominet;
-#endif
-
 int domain;
 socklen_t fromlen;
 int sd;				/* sd of network socket */
@@ -60,13 +54,12 @@ char Usage[] = "\
 Usage: attcp -x [-options] [-h] host ## transmit (xmit)\n\
        attcp -r [-options] [-c host] ## read from network\n\
 Common options:\n\
-        -x      source a pattern to network\n\
         -r      read as datasink (discard) all data from network\n\
         -c host \"collect call\": initiate connection with host then receive data\n\
         -h host set hostname to connect with\n\
-        -l ##   length of bufs read from or written to network (default 8192)\n\
-        -n ##   number of source bufs written to network (default 20480, or 20k) \n\
-        -i ##   \"interval\": number of seconds to run the test: rather than # of buffers (see -n)\n\
+        -b ##   buffer size for read from or write to network (default 8192)\n\
+        -n ##   number of source bufs transfered to network (default 20480, or 20k) \n\
+        -i ##   \"interval\": # of seconds to run the test: rather than # of buffers (see -n)\n\
                 using defaults only - 20k * 8k (or 160M) bytes is transferred per thread\n\
         -t ##   number of threads (default is 1)\n\
         -p ##   port number to send to or listen at (default 49149)\n\
@@ -80,9 +73,7 @@ Common options:\n\
         -v[vvv] verbose: print more statistics\n\
 Options specific to -r:\n\
         -B      process full blocks as specified by -l (concate reads until \"blocksize\" is reached\n\
-        -T      \"touch\": access each byte as it's read\n\
 ";
-
 
 char stats[128];
 uint64_t sockCalls;	/* # of socket() I/O calls */
