@@ -1,4 +1,8 @@
+0.6.6.3: 2017-06-19
 * enhance syslog reports - to include thread details
+* better approximation of bps - bits per second
+* versions 0.6.6.1 and 0.6.6.2 were practice for git.
+
 0.6.6.0: 2017-04-19
 * now runs 'thread' based, xfer is always a thread - i.e., ps -p <PID> -mo THREAD will
   always show at least two threads (one or more for socket communication and the initial
