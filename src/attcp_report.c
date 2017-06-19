@@ -12,13 +12,98 @@
  * $Id: attcp_report.c 239 2017-04-12 18:37:47Z michael $
  */
 
-#include <config.h>
 #include "attcp.h"
+#include <config.h>
 
 #include <sys/resource.h>
 typedef	int	boolean;
 
 extern char stats[128];
+
+double
+nvalue(double b, char fmt)
+{
+    switch (fmt) {
+/*
+ * calculate Bytes per sec - formated to 'fmt'  from the RAW Bytes per sec value - b
+ */
+	case 'G':
+	    return(b / (1024.0 * 1024.0 * 1024.0));
+	    break;
+	default:
+	case 'M':
+	    return(b / (1024.0 * 1024.0));
+	    break;
+	case 'K':
+	    return(b / 1024.0);
+	    break;
+	case 'B':
+	case 'R':
+	    return(b );
+	    break;
+/*
+ * approximate bps from the Bytes per sec value - b
+ */
+	case 'g':
+	    return(b / (0.99 * 102.40 * 1024.0 * 1024.0));
+	    break;
+	case 'm':
+	    return(b / (0.99 * 102.40 * 1024.0));
+	    break;
+	case 'k':
+	    return(b / (0.99 * 102.40));
+	    break;
+	case 'b':
+	case 'r':
+	    return(b / 0.99 );
+	    break;
+    }
+}
+
+char *
+nformat(char fmt)
+{
+    static char obuf[50];
+    switch (fmt) {
+/*
+ * calculate Bytes per sec - formated to 'fmt'  from the RAW Bytes per sec value - b
+ */
+	case 'G':
+	    return("GB");
+	    break;
+	default:
+	case 'M':
+	    return("MB");
+	    break;
+	case 'K':
+	    return("KB");
+	    break;
+	case 'B':
+	    return("B");
+	    break;
+	case 'R':
+	    return("");
+	    break;
+/*
+ * approximate bps from the Bytes per sec value - b
+ */
+	case 'g':
+	    return("Gbit");
+	    break;
+	case 'm':
+	    return("Mbit");
+	    break;
+	case 'k':
+	    return("Kbit");
+	    break;
+	case 'b':
+	    return("bit");
+	    break;
+	case 'r':
+	    return("");
+	    break;
+    }
+}
 
 char *
 outfmt(double b, char fmt)
@@ -29,14 +114,14 @@ outfmt(double b, char fmt)
  * calculate Bytes per sec - formated to 'fmt'  from the RAW Bytes per sec value - b
  */
 	case 'G':
-	    sprintf(obuf, "%.2f GB", b / 1024.0 / 1024.0 / 1024.0);
+	    sprintf(obuf, "%.2f GB", b / (1024.0 * 1024.0 * 1024.0));
 	    break;
 	default:
+	case 'M':
+	    sprintf(obuf, "%.2f MB", b / (1024.0 * 1024.0));
+	    break;
 	case 'K':
 	    sprintf(obuf, "%.2f KB", b / 1024.0);
-	    break;
-	case 'M':
-	    sprintf(obuf, "%.2f MB", b / 1024.0 / 1024.0);
 	    break;
 	case 'B':
 	    sprintf(obuf, "%.2f B", b );
@@ -44,27 +129,29 @@ outfmt(double b, char fmt)
 	case 'R':
 	    sprintf(obuf, "%.2f", b );
 	    break;
-	case 'g':
 /*
  * approximate bps from the Bytes per sec value - b
  */
-	    sprintf(obuf, "%.2f Gbit", b / 0.975 / 1024.0 / 1024.0 / 1024.0);
-	    break;
-	case 'k':
-	    sprintf(obuf, "%.2f Kbit", b / 0.975 / 1024.0);
+	case 'g':
+	    sprintf(obuf, "%.2f Gbit", b / (0.99 * 102.40 * 1024.0 * 1024.0));
 	    break;
 	case 'm':
-	    sprintf(obuf, "%.2f Mbit", b / 0.975 / 1024.0 / 1024.0);
+	    sprintf(obuf, "%.2f Mbit", b / (0.99 * 102.40 * 1024.0));
+	    break;
+	case 'k':
+	    sprintf(obuf, "%.2f Kbit", b / (0.99 * 102.40));
 	    break;
 	case 'b':
-	    sprintf(obuf, "%.2f bit", b / 0.975 );
+	    sprintf(obuf, "%.2f bit", b / 0.99 );
 	    break;
 	case 'r':
-	    sprintf(obuf, "%.2f", b / 0.975 );
+	    sprintf(obuf, "%.2f", b / 0.99 );
 	    break;
     }
     return obuf;
 }
+
+#define END(x)	{while(*x) x++;}
 
 static void
 psecs(l,cp)
@@ -108,7 +195,6 @@ prusage(r0, r1, e, b, outp)
 	    (r1->ru_stime.tv_usec-r0->ru_stime.tv_usec)/10000;
 	ms =  (e->tv_sec-b->tv_sec)*100 + (e->tv_usec-b->tv_usec)/10000;
 
-#define END(x)	{while(*x) x++;}
 	cp = "%u user %s sys %E real %P\n\t%Xi+%Dd %M maxrss\n\t%F+%R pf\n\t%C csw\n\t%r+%x messages";
 	cp = "%u user %s sys %E real %P percent";
 	cp = "  %u %s %E %P";
@@ -222,7 +308,10 @@ attcp_rpt(boolean verbose, char fmt, uint64_t nbytes)
 
 	realtime = time_real();
 	physc = time_busy();
-	double mbsec = (nbytes/realtime)/(double) (1024*1024);
+	double bsec = (nbytes/realtime);
+	double mbsec = bsec / (double) (1024*1024);
+	double fmbsec = nvalue(bsec, fmt);
+	char *bformat = nformat(fmt);
 
 #ifdef HAVE_LIBPERFSTAT
 	perfstat_report(verbose);
@@ -232,7 +321,10 @@ attcp_rpt(boolean verbose, char fmt, uint64_t nbytes)
         if( realtime <= 0.0 )  realtime = 0.001;
 
 	if (verbose < 1)
-		fprintf(stdout, "%s\n",  outfmt((nbytes/realtime),fmt));
+#ifdef XXX
+		fprintf(stdout, "%s/sec\n",  outfmt((nbytes/realtime),fmt));
+#endif
+		fprintf(stdout, "%.2f %s/sec\n", fmbsec, bformat);
 	else
 	{
           fprintf(stdout,"ATTCP Summary\n");
@@ -247,7 +339,7 @@ attcp_rpt(boolean verbose, char fmt, uint64_t nbytes)
 		sockCalls, nbytes / sockCalls,
 		(realtime)/((double)sockCalls)*1024.0, ((double)sockCalls)/realtime);
 	}
-	if (verbose > 1)
+	if (verbose > 2)
           syslog(SEVERITY,"%8s %10s %8s %8s %6s %10s %8s %7s %9s\n",
 		"MB/Sec", "MByte", "seconds", "physc", "%busy", "Calls", "B/call", "ms/call", "call/sec");
 

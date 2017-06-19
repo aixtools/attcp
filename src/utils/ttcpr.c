@@ -12,7 +12,12 @@ int main()
 		exit(1);
 	}
 	while (1) {
+/*
 		ret = fread(buffer,1,buffer_size,stdin);
+
+ * check to syscall read() from library call fread()
+ */
+		ret = read(0, buffer, buffer_size);
 		if (0 == ret) {
 			break;
 		}
