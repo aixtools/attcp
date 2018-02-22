@@ -1,2 +1,2 @@
-#!/bin/ksh
-/opt/bin/attcp -p 32765 -f M -x -i 10 -h $*
+#!/bin/sh
+attcp -p 32765 -f M -x -i 10 -h $*
