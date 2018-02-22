@@ -29,9 +29,9 @@ attcp_log_opts(attcp_opt_p a_opts)
 	int	deny_severity	= LOG_WARNING;    /* ditto */
 	attcp_set_p
 		cs		= &a_opts->settings;
-	char	msg1[128];
-	char	msg2[128];
-	char	msg3[128];
+	char	msg1[4096];
+	char	msg2[4096];
+	char	msg3[4096];
 	sprintf(msg1, "%s%s%s.%d",
 	    cs->transport == SOCK_DGRAM ? "udp" : "tcp",
 	    cs->x_flag ? "=>" : "<=",
@@ -47,7 +47,7 @@ attcp_log_opts(attcp_opt_p a_opts)
 	 */
 	if (cs->maxtime > 0)
 		sprintf(msg2, "TIMED: max:%0.2f, buflen=%d, time=%d sec",
-		    cs->io_size, cs->maxtime);
+		    (float) cs->maxtime, cs->io_size, cs->maxtime);
 	else
 		sprintf(msg2, "SIZED: buflen=%d, bytes=%uMB, nbuf=%d",
 		    cs->io_size, (cs->io_size * cs->io_count) / (1024 * 1024), cs->io_size);
