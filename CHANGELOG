@@ -1,3 +1,9 @@
+0.6.6.5: 2018-02-22
+* update CHANGLOG
+* 0.6.6.4 was a debug version, never released
+* this version is put "out there" as it is improved, but also to 0.6.6.X
+* using a new mode of git and worktree - for future work!
+
 0.6.6.3: 2017-06-19
 * enhance syslog reports - to include thread details
 * better approximation of bps - bits per second

@@ -117,7 +117,7 @@ int perfstat_init(void)
         exit(0);
    }
    if (tot < 0) {
-        perror("perfstat_netinterface: ");
+        perror("perfstat_netinterface: tot<0 ");
         exit(1);
    }
    

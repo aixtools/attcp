@@ -1,0 +1,259 @@
+0 061920274617 2
+aixtools.attcp.0.6.6.3.I 4 R I aixtools.attcp {
+aixtools.attcp.man.en_US 00.06.0006.0003 1 N U en_US aixtools attcp man pages
+[
+%
+/usr/share/man/man1 48
+/usr/lib/objrepos 6
+INSTWORK 16 16
+%
+%
+%
+%
+%
+%
+]
+aixtools.attcp.share 00.06.0006.0003 1 N U en_US aixtools attcp universal files
+[
+%
+/opt/share/doc 0
+/opt/share/doc/attcp 16
+/usr/lib/objrepos 10
+INSTWORK 32 32
+%
+%
+%
+%
+%
+%
+]
+aixtools.attcp.rte 00.06.0006.0003 1 N U en_US aixtools attcp 19-Jun-2017
+[
+*prereq bos.rte  7.1.3.0
+%
+/opt/bin 168
+/usr/lib/objrepos 17
+INSTWORK 64 64
+%
+%
+%
+%
+%
+%
+]
+}
+aixtools.attcp.0.6.6.2.I 4 R I aixtools.attcp {
+aixtools.attcp.man.en_US 00.06.0006.0002 1 N U en_US aixtools attcp man pages
+[
+%
+/usr/share/man/man1 48
+/usr/lib/objrepos 6
+INSTWORK 16 16
+%
+%
+%
+%
+%
+%
+]
+aixtools.attcp.share 00.06.0006.0002 1 N U en_US aixtools attcp universal files
+[
+%
+/opt/share/doc 0
+/opt/share/doc/attcp 16
+/usr/lib/objrepos 10
+INSTWORK 32 32
+%
+%
+%
+%
+%
+%
+]
+aixtools.attcp.rte 00.06.0006.0002 1 N U en_US aixtools attcp 26-Apr-2017
+[
+*prereq bos.rte  5.3.7.0
+%
+/opt/bin 168
+/usr/lib/objrepos 17
+INSTWORK 64 64
+%
+%
+%
+%
+%
+%
+]
+}
+aixtools.attcp.0.6.6.1.I 4 R I aixtools.attcp {
+aixtools.attcp.man.en_US 00.06.0006.0001 1 N U en_US aixtools attcp man pages
+[
+%
+/usr/share/man/man1 48
+/usr/lib/objrepos 6
+INSTWORK 16 16
+%
+%
+%
+%
+%
+%
+]
+aixtools.attcp.share 00.06.0006.0001 1 N U en_US aixtools attcp universal files
+[
+%
+/opt/share/doc 0
+/opt/share/doc/attcp 16
+/usr/lib/objrepos 10
+INSTWORK 32 32
+%
+%
+%
+%
+%
+%
+]
+aixtools.attcp.rte 00.06.0006.0001 1 N U en_US aixtools attcp 25-Apr-2017
+[
+*prereq bos.rte  5.3.7.0
+%
+/opt/bin 168
+/usr/lib/objrepos 17
+INSTWORK 64 64
+%
+%
+%
+%
+%
+%
+]
+}
+aixtools.attcp.0.6.6.0.I 4 R I aixtools.attcp {
+aixtools.attcp.man.en_US 00.06.0006.0000 1 N U en_US aixtools attcp man pages
+[
+%
+/usr/share/man/man1 48
+/usr/lib/objrepos 6
+INSTWORK 16 16
+%
+%
+%
+%
+%
+%
+]
+aixtools.attcp.share 00.06.0006.0000 1 N U en_US aixtools attcp universal files
+[
+%
+/opt/share/doc 0
+/opt/share/doc/attcp 24
+/usr/lib/objrepos 11
+INSTWORK 32 32
+%
+%
+%
+%
+%
+%
+]
+aixtools.attcp.rte 00.06.0006.0000 1 N U en_US aixtools attcp 19-Apr-2017
+[
+*prereq bos.rte  5.3.7.0
+%
+/opt/bin 160
+/usr/lib/objrepos 17
+INSTWORK 64 64
+%
+%
+%
+%
+%
+%
+]
+}
+aixtools.attcp.0.6.5.0.I 4 R I aixtools.attcp {
+aixtools.attcp.man.en_US 00.06.0005.0000 1 N U en_US aixtools attcp man pages
+[
+%
+/usr/share/man/man1 48
+/usr/lib/objrepos 6
+INSTWORK 16 16
+%
+%
+%
+%
+%
+%
+]
+aixtools.attcp.share 00.06.0005.0000 1 N U en_US aixtools attcp universal files
+[
+%
+/opt/share/doc 0
+/opt/share/doc/attcp 24
+/usr/lib/objrepos 11
+INSTWORK 32 32
+%
+%
+%
+%
+%
+%
+]
+aixtools.attcp.rte 00.06.0005.0000 1 N U en_US aixtools attcp 14-Apr-2017
+[
+*prereq bos.rte  5.3.7.0
+%
+/opt/bin 152
+/usr/lib/objrepos 17
+INSTWORK 48 48
+%
+%
+%
+%
+%
+%
+]
+}
+aixtools.attcp.0.6.4.0.aix537.I 4 R I aixtools.attcp {
+aixtools.attcp.man.en_US 00.06.0004.0000 1 N U en_US man pages
+[
+%
+/usr/share/man/man1 48
+/usr/lib/objrepos 6
+INSTWORK 16 16
+%
+%
+%
+%
+%
+%
+]
+aixtools.attcp.share 00.06.0004.0000 1 N U en_US universal pages
+[
+%
+/opt/share/doc 0
+/opt/share/doc/attcp 24
+/usr/lib/objrepos 11
+INSTWORK 32 32
+%
+%
+%
+%
+%
+%
+]
+aixtools.attcp.rte 00.06.0004.0000 1 N U en_US 1550 1214 1751
+[
+*prereq bos.rte  5.3.7.0
+%
+/opt/bin 120
+/usr/lib/objrepos 17
+INSTWORK 48 48
+%
+%
+%
+%
+%
+%
+]
+}
