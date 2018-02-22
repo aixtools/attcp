@@ -22,7 +22,7 @@ void
 attcp_socket(attcp_conn_p c, attcp_opt_p a)
 {
 	attcp_set_p	opts = &c->settings;
-	static socket_cnt = 0;
+	static 	int	socket_cnt = 0;
 	char message[128];
 	int addr_family = AF_INET;
 	int sd = -1;
@@ -81,6 +81,7 @@ attcp_socket(attcp_conn_p c, attcp_opt_p a)
 /*
  * set options on a socket
  */
+void
 attcp_setoption( attcp_conn_p c)
 {
 	int sd = c->sd;

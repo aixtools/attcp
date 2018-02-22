@@ -229,6 +229,7 @@ attcp_opt_p attcp_getopt(int argc,char **argv)
 	return(a_opts);
 }
 
+void
 main(int argc, char **argv)
 {
 	/*
@@ -272,7 +273,7 @@ main(int argc, char **argv)
 	signal(SIGINT, SIG_IGN);
 	signal(SIGALRM, SIG_IGN);
 	last_tid = attcp_pthread_start(ax->threads);
-	if (last_tid == NULL) {
+	if (last_tid == (pthread_t) NULL) {
 		err("pthread start failed");
 	}
 /*

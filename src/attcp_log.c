@@ -22,6 +22,7 @@
 /*
  * Report connection options
  */
+void
 attcp_log_opts(attcp_opt_p a_opts)
 {
 	int	allow_severity	= SEVERITY;      /* run-time adjustable */
@@ -58,6 +59,7 @@ attcp_log_opts(attcp_opt_p a_opts)
 	syslog(LOG_INFO, "%s %s%s", msg1, msg2, msg3);
 }
 
+void
 attcp_log_init(char *prgname)
 {
 	char *syslog_idstr;

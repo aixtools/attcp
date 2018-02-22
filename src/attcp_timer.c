@@ -23,27 +23,45 @@ static struct	timeval time1;	/* Time at which timing stopped */
 static struct	rusage ru0;	/* Resource utilization at the start */
 static struct	rusage ru1;	/* Resource utilization at the end */
 
-static void tvadd();
-static void tvsub();
-
 /*
  * I doubt if select() on fd(1) - stdout - is the correct approach to
  * pause XXX microseconds, need an improved "sleep" aka delay mechinism.
  */
 void
-delay(us)
+delay(int _usec)
 {
         struct timeval tv;
 
         tv.tv_sec = 0;
-        tv.tv_usec = us;
+        tv.tv_usec = _usec;
         (void)select( 1, (fd_set*)0, (fd_set *)0, (fd_set *)0, &tv );
+}
+
+static void
+tvadd(tsum, t0, t1)
+	struct timeval *tsum, *t0, *t1;
+{
+
+	tsum->tv_sec = t0->tv_sec + t1->tv_sec;
+	tsum->tv_usec = t0->tv_usec + t1->tv_usec;
+	if (tsum->tv_usec >= 1000000)
+		tsum->tv_sec++, tsum->tv_usec -= 1000000;
+}
+
+static void
+tvsub(struct timeval *tdiff, struct timeval *t1, struct timeval *t0)
+{
+
+	tdiff->tv_sec = t1->tv_sec - t0->tv_sec;
+	tdiff->tv_usec = t1->tv_usec - t0->tv_usec;
+	if (tdiff->tv_usec < 0)
+		tdiff->tv_sec--, tdiff->tv_usec += 1000000;
 }
 
 /*
  *			TIMER - Start/Stop {0|1}
  */
-static ended = 0;
+static int ended = 0;
 void
 timer0(int Who, attcp_conn_p c)
 {
@@ -81,26 +99,6 @@ timer1(int Who, attcp_conn_p c)
 		getrusage(Who, &c->ru1);
 }
 
-static void
-tvadd(tsum, t0, t1)
-	struct timeval *tsum, *t0, *t1;
-{
-
-	tsum->tv_sec = t0->tv_sec + t1->tv_sec;
-	tsum->tv_usec = t0->tv_usec + t1->tv_usec;
-	if (tsum->tv_usec >= 1000000)
-		tsum->tv_sec++, tsum->tv_usec -= 1000000;
-}
-
-static void
-tvsub(struct timeval *tdiff, struct timeval *t1, struct timeval *t0)
-{
-
-	tdiff->tv_sec = t1->tv_sec - t0->tv_sec;
-	tdiff->tv_usec = t1->tv_usec - t0->tv_usec;
-	if (tdiff->tv_usec < 0)
-		tdiff->tv_sec--, tdiff->tv_usec += 1000000;
-}
 double
 time_real()
 {

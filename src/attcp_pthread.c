@@ -187,10 +187,10 @@ attcp_pthread_init(int threads)
 
 /*
  * routine to report thread statistics when xfer routines finish
- */
 attcp_thread_report()
 {
 }
+ */
 /*
  * create the threads and set the options
  */

@@ -11,6 +11,10 @@
  * $Author: michael $
  * $Id: attcp.h 243 2017-04-12 20:08:59Z michael $
  */
+#ifndef _AIX
+#define _GNU_SOURCE
+#endif
+
 #include <pthread.h>
 
 #include <unistd.h>
@@ -101,9 +105,9 @@ extern attcp_opt_p	a;
 extern attcp_conn_p	c;
 #endif
 
+void usage();
 void err();
 void mes();
-int pattern();
 
 void timer0(int Who, attcp_conn_p c);
 void timer1(int Who, attcp_conn_p c);
@@ -111,20 +115,65 @@ void timer1(int Who, attcp_conn_p c);
 void prep_timer();
 double read_timer();
 double elapsed_time();
+
 int Nread(int sd, void*buf, unsigned count, attcp_conn_p c);
 int Nwrite(int sd, void*buf, unsigned count, attcp_conn_p c);
-void delay();
+
+void delay(int u_sec);
+
 int mread(int sd, void*buf, unsigned count, attcp_conn_p     c);
 char *outfmt(double b, char fmt);
 
 typedef int boolean;
-void attcp_rpt(boolean verbose, char fmt, uint64_t nbytes);
 
-pthread_t attcp_pthread_start(int threads);
-void attcp_socket(attcp_conn_p c, attcp_opt_p a);
+void attcp_rcvr( attcp_conn_p c);
+void attcp_xmit( attcp_conn_p c);
+void attcp_xfer( attcp_conn_p c);
+
+void
+attcp_rpt(boolean verbose, char fmt, uint64_t nbytes);
+
+pthread_t
+attcp_pthread_start(int threads);
+
+boolean
+attcp_pthread_init(int threads);
+
+void
+attcp_thread_stop(int threads);
 
 uint64_t
 attcp_thread_done(int threads);
+
+/*
+ * create the threads and set the options
+ */
+void
+attcp_pthread_socket(attcp_opt_p a_opts);
+
+void
+attcp_socket(attcp_conn_p c, attcp_opt_p a);
+
+/*
+ * connect a socket
+ */
+void
+attcp_connect( attcp_conn_p c);
+
+/*
+ * set options on a socket
+ */
+void
+attcp_setoption( attcp_conn_p c);
+
+/*
+ * Report connection options
+ */
+void
+attcp_log_opts(attcp_opt_p a_opts);
+void
+attcp_log_init(char *prgname);
+
 
 extern char Usage[];
 extern uint64_t	sockCalls;

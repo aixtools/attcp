@@ -11,10 +11,24 @@
  * $Id: attcp_main.c 230 2017-03-24 09:46:19Z michael $
  */
 
+#include "attcp.h"
 #include <config.h>
 #include <string.h>
-#include "attcp.h"
 
+static void
+pattern( cp, cnt )
+register char *cp;
+register int cnt;
+{
+	register char c;
+	c = 0;
+	while( cnt-- > 0 )  {
+		while( !isprint((c&0x7F)) )  c++;
+		*cp++ = (c++&0x7F);
+	}
+}
+
+void
 attcp_xmit( attcp_conn_p c)
 {
 	void		*buf = c->buf;
@@ -105,6 +119,8 @@ attcp_xmit( attcp_conn_p c)
 	fflush(stderr);
 #endif
 }
+
+void
 attcp_rcvr(attcp_conn_p c)
 {
 	void		*buf = c->buf;
@@ -171,6 +187,8 @@ attcp_rcvr(attcp_conn_p c)
 	c->io_done++;
 	c->nbytes = nbytes;
 }
+
+void
 attcp_xfer( attcp_conn_p c)
 {
 	timer0(RUSAGE_THREAD, c);
@@ -199,22 +217,10 @@ attcp_xfer( attcp_conn_p c)
 #endif
 }
 
-pattern( cp, cnt )
-register char *cp;
-register int cnt;
-{
-	register char c;
-	c = 0;
-	while( cnt-- > 0 )  {
-		while( !isprint((c&0x7F)) )  c++;
-		*cp++ = (c++&0x7F);
-	}
-}
-
 /*
  *			N R E A D
  */
-Nread( int sd, void *buf, unsigned count, attcp_conn_p c)
+int Nread( int sd, void *buf, unsigned count, attcp_conn_p c)
 {
 	ulong *sockCalls = &c->sockcalls;
 	struct	sockaddr_in *sinPeer;
@@ -254,7 +260,7 @@ again2:
 /*
  *			N W R I T E
  */
-Nwrite(int sd, void *buf, unsigned count, attcp_conn_p c)
+int Nwrite(int sd, void *buf, unsigned count, attcp_conn_p c)
 {
 	register int cnt;
 	register ulong *sockCalls = &c->sockcalls;
