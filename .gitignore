@@ -2,6 +2,7 @@
 *~
 *.o
 *.so
+*.gz
 .deps
 *.po
 config.h
