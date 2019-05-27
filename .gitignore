@@ -22,7 +22,7 @@ buildaix/*template
 installp/
 
 #autotools
-Makefile.in
+# Makefile.in
 Makefile
 README
 README.md
@@ -30,4 +30,4 @@ TODO
 aclocal.m4
 autom4te.cache/
 build-aux/
-config.h.in
+# config.h.in
